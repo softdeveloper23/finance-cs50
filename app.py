@@ -102,8 +102,17 @@ def logout():
 @app.route("/quote", methods=["GET", "POST"])
 @login_required
 def quote():
-    """Get stock quote."""
-    return apology("TODO")
+    if request.method == 'POST':
+        stock = {}
+        # Get the stock symbol from the form
+        symbol = request.form.get('symbol')
+        if lookup(symbol) == None:
+            return apology("Invalid symbol")
+        else:
+            stock = lookup(symbol)
+            return render_template('quoted.html', stock=stock)
+    else:
+        return render_template('quote.html')
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -134,7 +143,7 @@ def register():
         elif len(db.execute("SELECT * FROM users WHERE hash = ?", request.form['password'])) != 0:
             return apology("password is already taken", 403)
 
-        # Query database for username
+        # Get the username and password from the form
 
         username = request.form['username']
         plaintext_password = request.form['password']

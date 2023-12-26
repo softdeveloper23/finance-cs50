@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Quoted
+{% endblock %}
+
+{% block main %}
+    <div class="card">
+        <div class="card-header">
+            Quote
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Symbol</dt>
+                <dd class="col-sm-9">{{ symbol }}</dd>
+                <dt class="col-sm-3">Name</dt>
+                <dd class="col-sm-9">{{ name }}</dd>
+                <dt class="col-sm-3">Price</dt>
+                <dd class="col-sm-9">{{ price }}</dd>
+            </dl>
+        </div>
+    </div>
+{% endblock %}
