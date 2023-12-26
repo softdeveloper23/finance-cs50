@@ -126,6 +126,14 @@ def register():
         elif request.form['password'] != request.form['confirmation']:
             return apology("passwords do not match", 403)
 
+        # Ensure username is not already taken
+        elif len(db.execute("SELECT * FROM users WHERE username = ?", request.form['username'])) != 0:
+            return apology("username is already taken", 403)
+
+        # Ensure password is not already taken
+        elif len(db.execute("SELECT * FROM users WHERE hash = ?", request.form['password'])) != 0:
+            return apology("password is already taken", 403)
+
         # Query database for username
 
         username = request.form['username']
