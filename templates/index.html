@@ -17,20 +17,27 @@
                 <th class="text-end">TOTAL</th>
             </tr>
         </thead>
-       <tbody>
-
+        <tbody>
+            {% for holding in holdings %}
+            <tr>
+                <td class="text-start">{{ holding.stock_symbol }}</td>
+                <td class="text-start">{{ holding.name }}</td>
+                <td class="text-end">{{ holding.quantity }}</td>
+                <td class="text-end">{{ holding.price | usd }}</td>
+                <td class="text-end">{{ holding.total_value | usd }}</td>
+            </tr>
+            {% endfor %}
         </tbody>
         <tfoot>
             <tr>
                 <td class="border-0 fw-bold text-end" colspan="4">Cash</td>
-                <td class="border-0 text-end">$8,621.76</td>
+                <td class="border-0 text-end">{{ cash_balance | usd }}</td>
             </tr>
             <tr>
                 <td class="border-0 fw-bold text-end" colspan="4">TOTAL</td>
-                <td class="border-0 w-bold text-end">$10,000.83</td>
+                <td class="border-0 w-bold text-end">{{ grand_total | usd }}</td>
             </tr>
         </tfoot>
     </table>
-
-        </main>
+</main>
 {% endblock %}
