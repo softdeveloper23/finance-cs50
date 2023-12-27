@@ -56,7 +56,9 @@ def buy():
             if stock == None:
                 return apology("Invalid symbol")
             else:
-                return render_template('buy.html', stock=stock, shares=shares)
+                return render_template('index.html', stock=stock, shares=shares)
+    else:
+        return render_template('buy.html')
 
 
 @app.route("/history")
