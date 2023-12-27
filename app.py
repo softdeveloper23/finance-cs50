@@ -243,4 +243,67 @@ def register():
 @login_required
 def sell():
     """Sell shares of stock"""
-    return apology("TODO")
+    holdings = db.execute('SELECT stock_symbol FROM stocks WHERE user_id=?', (session["user_id"],))
+    symbols = [holding['stock_symbol'] for holding in holdings]
+    if request.method == 'POST':
+        if not request.form.get('symbol'):
+            return apology("must provide symbol")
+        elif not request.form.get('shares'):
+            return apology("must provide shares")
+        elif int(request.form.get('shares')) < 0:
+            return apology("must provide positive shares")
+        else:
+            # Sell the shares
+            symbol = request.form.get('symbol')
+            shares_sold = request.form.get('shares')
+            shares_sold = int(shares_sold)
+            stock = lookup(symbol)
+            if stock == None:
+                return apology("Invalid symbol")
+            elif symbol not in symbols:
+                return apology("You do not own any shares of this stock")
+            else:
+                # Get the user's id
+                user_id = session["user_id"]
+
+                # Get the user's cash balance
+                cash_balance = db.execute('SELECT cash FROM users WHERE id=?', (user_id,))[0]['cash']
+                cash_balance = float(cash_balance)
+
+                # Get the stock's price at the time of purchase
+                sell_price = float(stock['price'])
+
+                # Get the time of the stock purchase
+                sell_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+                # Calculate the total cost of the purchase
+                total_value = float(stock['price'] * shares_sold)
+
+                # Check if the user has enough cash to make the purchase
+                if total_value < 0:
+                    return apology("Share worth must be positive")
+                else:
+                    # Update the user's cash balance
+                    cash = cash_balance + total_value
+
+                    db.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
+
+                    # Update the user's stock quantity
+                    quantity = db.execute('SELECT quantity FROM stocks WHERE user_id=? AND stock_symbol=?', user_id, symbol)
+
+                    quantity = quantity[0]['quantity'] - shares_sold
+
+                    # Get the purchase price of the stock
+                    purchase_price = db.execute('SELECT purchase_price FROM stocks WHERE user_id=? AND stock_symbol=?', user_id, symbol)
+                    purchase_price = purchase_price[0]['purchase_price']
+
+                    # Get the purchase date of the stock
+                    purchase_date = db.execute('SELECT purchase_date FROM stocks WHERE user_id=? AND stock_symbol=?', user_id, symbol)
+                    purchase_date = purchase_date[0]['purchase_date']
+
+                    # Add the sale to the 'stocks' database
+                    db.execute("INSERT INTO stocks (user_id, stock_symbol, sell_price, sell_date, purchase_price, purchase_date, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        user_id, symbol, sell_price, sell_date, purchase_price, purchase_date, quantity)
+                    return redirect('/')
+    else:
+        return render_template('sell.html', holdings=holdings)
