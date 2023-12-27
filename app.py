@@ -255,8 +255,7 @@ def sell():
         else:
             # Sell the shares
             symbol = request.form.get('symbol')
-            shares_sold = request.form.get('shares')
-            shares_sold = int(shares_sold)
+            shares_sold = int(request.form.get('shares'))
             stock = lookup(symbol)
             if stock == None:
                 return apology("Invalid symbol")
@@ -283,23 +282,26 @@ def sell():
                 if total_value < 0:
                     return apology("Share worth must be positive")
                 else:
+                    # Fetch the current quantity of the stock
+                    current_quantity = db.execute('SELECT quantity FROM stocks WHERE user_id=? AND stock_symbol=?', user_id, symbol)[0]['quantity']
+
+                    # Check if the user is selling more shares than they own
+                    if shares_sold > current_quantity:
+                        return apology("You do not own that many shares of this stock")
+
                     # Update the user's cash balance
                     cash = cash_balance + total_value
 
                     db.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
 
                     # Update the user's stock quantity
-                    quantity = db.execute('SELECT quantity FROM stocks WHERE user_id=? AND stock_symbol=?', user_id, symbol)
-
-                    quantity = quantity[0]['quantity'] - shares_sold
+                    quantity = current_quantity - shares_sold
 
                     # Get the purchase price of the stock
-                    purchase_price = db.execute('SELECT purchase_price FROM stocks WHERE user_id=? AND stock_symbol=?', user_id, symbol)
-                    purchase_price = purchase_price[0]['purchase_price']
+                    purchase_price = db.execute('SELECT purchase_price FROM stocks WHERE user_id=? AND stock_symbol=?', user_id, symbol)[0]['purchase_price']
 
                     # Get the purchase date of the stock
-                    purchase_date = db.execute('SELECT purchase_date FROM stocks WHERE user_id=? AND stock_symbol=?', user_id, symbol)
-                    purchase_date = purchase_date[0]['purchase_date']
+                    purchase_date = db.execute('SELECT purchase_date FROM stocks WHERE user_id=? AND stock_symbol=?', user_id, symbol)[0]['purchase_date']
 
                     # Add the sale to the 'stocks' database
                     db.execute("INSERT INTO stocks (user_id, stock_symbol, sell_price, sell_date, purchase_price, purchase_date, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -307,3 +309,4 @@ def sell():
                     return redirect('/')
     else:
         return render_template('sell.html', holdings=holdings)
+
