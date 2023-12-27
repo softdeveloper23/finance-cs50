@@ -1,4 +1,6 @@
 import os
+import datetime
+
 
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
@@ -35,7 +37,31 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
-    return apology("This is a test")
+
+    # Get the user's id
+    #user_id = db.execute('SELECT id FROM users WHERE username=?', (session['username'],))[0]['id']
+
+    # Get user's stocks and shares
+    #stock_symbol = db.execute('SELECT stock_symbol, quantity FROM stocks WHERE user_id=?', (user_id,))
+    #holdings = cursor.fetchall()
+
+    # Get user's cash balance
+    #cash_balance = db.execute('SELECT cash FROM users WHERE id=?', (user_id,))[0]['cash']
+
+    # Lookup the current price for each stock and calculate total value
+    #total_holdings_value = 0
+    #for holding in holdings:
+        #symbol, shares = holding
+        #current_price = lookup(symbol)
+        #total_value = shares * current_price
+       # holding.append(total_value)
+        #total_holdings_value += total_value
+
+    # Calculate grand total
+    #grand_total = total_holdings_value + cash_balance
+
+    # Render the index.html template, passing in the holdings, cash balance, and grand total
+    return render_template('index.html')
 
 
 @app.route("/buy", methods=["GET", "POST"])
@@ -47,16 +73,47 @@ def buy():
             return apology("must provide symbol")
         elif not request.form.get('shares'):
             return apology("must provide shares")
-        elif request.form.get('shares') < 0:
+        elif int(request.form.get('shares')) < 0:
             return apology("must provide positive shares")
         else:
             symbol = request.form.get('symbol')
             shares = request.form.get('shares')
+            shares = int(shares)
             stock = lookup(symbol)
             if stock == None:
                 return apology("Invalid symbol")
             else:
-                return render_template('index.html', stock=stock, shares=shares)
+                # Get the user's id
+                user_id = session["user_id"]
+
+                # Get the user's cash balance
+                cash_balance = db.execute('SELECT cash FROM users WHERE id=?', (user_id,))[0]['cash']
+                cash_balance = float(cash_balance)
+
+                # Get the stock's price at the time of purchase
+                purchase_price = float(stock['price'])
+
+                # Get the time of the stock purchase
+                purchase_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+                # Calculate the total cost of the purchase
+                total_cost = float(stock['price'] * shares)
+
+                # Check if the user has enough cash to make the purchase
+                if total_cost > cash_balance:
+                    return apology("Insufficient funds")
+                else:
+                    # Update the user's cash balance
+                    cash = cash_balance - total_cost
+
+                    db.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
+
+                    # Add the purchase to the 'stocks' database
+                    db.execute("INSERT INTO stocks (user_id, stock_symbol, purchase_price, purchase_date, quantity) VALUES (?, ?, ?, ?, ?)",
+                        user_id, symbol, purchase_price, purchase_date, shares)
+
+                    # Redirect to the home page
+                    return render_template('index.html')
     else:
         return render_template('buy.html')
 
