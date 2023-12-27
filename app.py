@@ -35,14 +35,28 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
-    return apology("TODO")
+    return apology("This is a test")
 
 
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
 def buy():
     """Buy shares of stock"""
-    return apology("TODO")
+    if request.method == 'POST':
+        if not request.form.get('symbol'):
+            return apology("must provide symbol")
+        elif not request.form.get('shares'):
+            return apology("must provide shares")
+        elif request.form.get('shares') < 0:
+            return apology("must provide positive shares")
+        else:
+            symbol = request.form.get('symbol')
+            shares = request.form.get('shares')
+            stock = lookup(symbol)
+            if stock == None:
+                return apology("Invalid symbol")
+            else:
+                return render_template('buy.html', stock=stock, shares=shares)
 
 
 @app.route("/history")
