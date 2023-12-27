@@ -38,30 +38,38 @@ def after_request(response):
 def index():
     """Show portfolio of stocks"""
 
+    holdings = {}
+
     # Get the user's id
-    #user_id = db.execute('SELECT id FROM users WHERE username=?', (session['username'],))[0]['id']
+    user_id = session["user_id"]
 
     # Get user's stocks and shares
-    #stock_symbol = db.execute('SELECT stock_symbol, quantity FROM stocks WHERE user_id=?', (user_id,))
-    #holdings = cursor.fetchall()
+    holdings = db.execute('SELECT stock_symbol, quantity FROM stocks WHERE user_id=?', (user_id,))
+    print(holdings)
 
     # Get user's cash balance
-    #cash_balance = db.execute('SELECT cash FROM users WHERE id=?', (user_id,))[0]['cash']
+    cash_balance = db.execute('SELECT cash FROM users WHERE id=?', (user_id,))[0]['cash']
+    print(cash_balance)
 
     # Lookup the current price for each stock and calculate total value
-    #total_holdings_value = 0
-    #for holding in holdings:
-        #symbol, shares = holding
-        #current_price = lookup(symbol)
-        #total_value = shares * current_price
-       # holding.append(total_value)
-        #total_holdings_value += total_value
+    total_holdings_value = 0
+    for holding in holdings:
+        symbol = holding['stock_symbol']
+        shares = holding['quantity']
+        current_price = lookup(symbol)
+        if current_price is None:
+            # Handle the error, e.g., by showing an error message to the user
+            return apology("Failed to fetch the current price for the stock", 400)
+        price = current_price['price']
+        price = float(price)
+        total_value = shares * price
+        total_holdings_value += total_value
 
     # Calculate grand total
-    #grand_total = total_holdings_value + cash_balance
+    grand_total = total_holdings_value + cash_balance
 
     # Render the index.html template, passing in the holdings, cash balance, and grand total
-    return render_template('index.html')
+    return render_template('index.html', holdings=holdings, cash_balance=cash_balance, grand_total=grand_total)
 
 
 @app.route("/buy", methods=["GET", "POST"])
