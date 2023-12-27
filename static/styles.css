@@ -21,3 +21,36 @@ nav .navbar-brand .green
 {
     color: #2e944b;
 }
+
+table {
+    border: 1px solid #ddd;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+thead th {
+    background-color: #f8f9fa;
+    color: #333;
+    font-weight: bold;
+}
+
+td {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.text-start {
+    text-align: left;
+}
+
+.text-end {
+    text-align: right;
+}
