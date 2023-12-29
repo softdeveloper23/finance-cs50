@@ -10,18 +10,20 @@
         <th>Stock Symbol</th>
         <th>Purchase Price</th>
         <th>Purchase Date</th>
-        <th>Quantity</th>
-        <th>Sell Date</th>
+        <th>Total Quantity Bought</th>
         <th>Sell Price</th>
+        <th>Sell Date</th>
+        <th>Total Quantity Sold</th>
     </tr>
     {% for transaction in transactions %}
     <tr>
         <td>{{ transaction.stock_symbol }}</td>
         <td>{{ transaction.purchase_price }}</td>
         <td>{{ transaction.purchase_date }}</td>
-        <td>{{ transaction.quantity }}</td>
-        <td>{{ transaction.sell_date }}</td>
+        <td>{{ transaction.bought_quantity }}</td>
         <td>{{ transaction.sell_price }}</td>
+        <td>{{ transaction.sell_date }}</td>
+        <td>{{ transaction.sold_quantity }}</td>
     </tr>
     {% endfor %}
 </table>
