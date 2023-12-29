@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Sold
+{% endblock %}
+
+{% block main %}
+    <div class="card">
+        <div class="card-header">
+            Stock Sold
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Price Sold At</dt>
+                <dd class="col-sm-9">{{ total_value | usd }}</dd>
+            </dl>
+        </div>
+    </div>
+{% endblock %}
