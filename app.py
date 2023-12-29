@@ -76,49 +76,51 @@ def index():
 def buy():
     """Buy shares of stock"""
     if request.method == 'POST':
-        if not request.form.get('symbol'):
-            return apology("must provide symbol")
-        elif not request.form.get('shares'):
-            return apology("must provide shares")
-        elif int(request.form.get('shares')) < 0:
-            return apology("must provide positive shares")
-        else:
-            symbol = request.form.get('symbol')
-            shares = request.form.get('shares')
+        symbol = request.form.get('symbol')
+        shares = request.form.get('shares')
+        try:
             shares = int(shares)
-            stock = lookup(symbol)
-            if stock == None:
-                return apology("Invalid symbol")
+        except ValueError:
+            return apology("must provide whole number shares", 400)
+        if not symbol:
+            return apology("must provide symbol", 400)
+        if not shares:
+            return apology("must provide shares", 400)
+        if shares < 0:
+            return apology("must provide positive shares", 400)
+        stock = lookup(symbol)
+        if stock == None:
+            return apology("Invalid symbol")
+        else:
+            # Get the user's id
+            user_id = session["user_id"]
+
+            # Get the user's cash balance
+            cash_balance = db.execute('SELECT cash FROM users WHERE id=?', (user_id,))[0]['cash']
+            cash_balance = float(cash_balance)
+
+            # Get the stock's price at the time of purchase
+            purchase_price = float(stock['price'])
+
+            # Get the time of the stock purchase
+            purchase_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            # Calculate the total cost of the purchase
+            total_cost = float(stock['price'] * shares)
+
+            # Check if the user has enough cash to make the purchase
+            if total_cost > cash_balance:
+                return apology("Insufficient funds")
             else:
-                # Get the user's id
-                user_id = session["user_id"]
+                # Update the user's cash balance
+                cash = cash_balance - total_cost
 
-                # Get the user's cash balance
-                cash_balance = db.execute('SELECT cash FROM users WHERE id=?', (user_id,))[0]['cash']
-                cash_balance = float(cash_balance)
+                db.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
 
-                # Get the stock's price at the time of purchase
-                purchase_price = float(stock['price'])
-
-                # Get the time of the stock purchase
-                purchase_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-                # Calculate the total cost of the purchase
-                total_cost = float(stock['price'] * shares)
-
-                # Check if the user has enough cash to make the purchase
-                if total_cost > cash_balance:
-                    return apology("Insufficient funds")
-                else:
-                    # Update the user's cash balance
-                    cash = cash_balance - total_cost
-
-                    db.execute("UPDATE users SET cash = ? WHERE id = ?", cash, user_id)
-
-                    # Add the purchase to the 'stocks' database
-                    db.execute("INSERT INTO stocks (user_id, stock_symbol, purchase_price, purchase_date, quantity) VALUES (?, ?, ?, ?, ?)",
-                        user_id, symbol, purchase_price, purchase_date, shares)
-                    return redirect('/')
+                # Add the purchase to the 'stocks' database
+                db.execute("INSERT INTO stocks (user_id, stock_symbol, purchase_price, purchase_date, quantity) VALUES (?, ?, ?, ?, ?)",
+                    user_id, symbol, purchase_price, purchase_date, shares)
+                return redirect('/')
     else:
         return render_template('buy.html')
 
@@ -205,11 +207,11 @@ def register():
 
         # Ensure password was submitted
         elif not request.form['password']:
-            return apology("must provide password", 403)
+            return apology("must provide password", 400)
 
         # Ensure password was confirmed
         elif not request.form['confirmation']:
-            return apology("must confirm password", 403)
+            return apology("must confirm password", 400)
 
         # Ensure password and confirmation match
         elif request.form['password'] != request.form['confirmation']:
@@ -221,7 +223,7 @@ def register():
 
         # Ensure password is not already taken
         elif len(db.execute("SELECT * FROM users WHERE hash = ?", request.form['password'])) != 0:
-            return apology("password is already taken", 403)
+            return apology("password is already taken", 400)
 
         # Get the username and password from the form
 
