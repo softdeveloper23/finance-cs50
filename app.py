@@ -68,8 +68,7 @@ def index():
     cash_balance = float(cash_balance)
 
     # Render the index.html template, passing in the holdings, cash balance, and grand total
-    return render_template('index.html', holdings=holdings, cash_balance=cash_balance, grand_total=grand_total,
-                           total_holdings_value=total_holdings_value)
+    return render_template('index.html', holdings=holdings, cash_balance=cash_balance, grand_total=grand_total, total_holdings_value=total_holdings_value)
 
 
 @app.route("/buy", methods=["GET", "POST"])

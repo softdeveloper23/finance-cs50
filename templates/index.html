@@ -27,6 +27,8 @@
                 <td class="text-end">{{ holding.total_value | usd }}</td>
             </tr>
             {% endfor %}
+            <tr><p>Cash Balance: {{ cash_balance | usd }}</p>
+            </tr>
         </tbody>
         <tfoot>
             <tr>
