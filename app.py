@@ -201,7 +201,7 @@ def register():
 
         # Ensure username was submitted
         if not request.form['username']:
-            return apology("must provide username", 403)
+            return apology("must provide username", 400)
 
         # Ensure password was submitted
         elif not request.form['password']:
@@ -213,11 +213,11 @@ def register():
 
         # Ensure password and confirmation match
         elif request.form['password'] != request.form['confirmation']:
-            return apology("passwords do not match", 403)
+            return apology("passwords do not match", 400)
 
         # Ensure username is not already taken
         elif len(db.execute("SELECT * FROM users WHERE username = ?", request.form['username'])) != 0:
-            return apology("username is already taken", 403)
+            return apology("username is already taken", 400)
 
         # Ensure password is not already taken
         elif len(db.execute("SELECT * FROM users WHERE hash = ?", request.form['password'])) != 0:
