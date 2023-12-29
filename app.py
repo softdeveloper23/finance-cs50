@@ -68,7 +68,8 @@ def index():
     cash_balance = float(cash_balance)
 
     # Render the index.html template, passing in the holdings, cash balance, and grand total
-    return render_template('index.html', holdings=holdings, cash_balance=cash_balance, grand_total=grand_total, total_holdings_value=total_holdings_value)
+    return render_template('index.html', holdings=holdings, cash_balance=cash_balance, grand_total=grand_total,
+                           total_holdings_value=total_holdings_value)
 
 
 @app.route("/buy", methods=["GET", "POST"])
@@ -120,6 +121,9 @@ def buy():
                 # Add the purchase to the 'stocks' database
                 db.execute("INSERT INTO stocks (user_id, stock_symbol, purchase_price, purchase_date, quantity) VALUES (?, ?, ?, ?, ?)",
                     user_id, symbol, purchase_price, purchase_date, shares)
+
+                flash(f"Bought {shares} shares of {symbol} for {usd(total_cost)}")
+
                 return redirect('/')
     else:
         return render_template('buy.html')
@@ -179,7 +183,6 @@ def logout():
 
     # Redirect user to login form
     return redirect("/")
-
 
 @app.route("/quote", methods=["GET", "POST"])
 @login_required
@@ -310,6 +313,9 @@ def sell():
                     # Add the sale to the 'stocks' database
                     db.execute("INSERT INTO stocks (user_id, stock_symbol, sell_price, sell_date, purchase_price, purchase_date, quantity) VALUES (?, ?, ?, ?, ?, ?, ?)",
                         user_id, symbol, sell_price, sell_date, purchase_price, purchase_date, quantity)
+
+                    flash(f"Sold {shares_sold} shares of {symbol} for {usd(total_value)}")
+
                     return redirect('/')
     else:
         return render_template('sell.html', holdings=holdings)
